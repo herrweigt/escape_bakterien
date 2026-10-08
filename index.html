@@ -205,7 +205,9 @@ a.lnk{color:var(--amber)}
 @keyframes flash{0%{opacity:0}18%{opacity:.62}100%{opacity:0}}
 #timeup{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:70;background:#2a0b09;border:1.5px solid var(--bad);color:#ffd3d0;
   font-family:var(--mono);font-size:.85rem;letter-spacing:.08em;padding:.6em 1em;max-width:92vw;text-align:center;display:none}
-#timeup.on{display:block}
+#timeup.on{display:flex;align-items:center;gap:.9em}
+#timeup button{background:none;border:1px solid #ffd3d0;color:#ffd3d0;width:1.9em;height:1.9em;border-radius:50%;font-size:1.1rem;line-height:1;cursor:pointer;flex:none;padding:0}
+#timeup button:hover{background:rgba(255,255,255,.15)}
 @media (max-width:560px){#timer{font-size:.9rem;top:10px}}
 
 /* Platzhalter-/Endseiten */
@@ -343,7 +345,7 @@ a.lnk{color:var(--amber)}
   <button class="x" id="mx" type="button" aria-label="Schließen">&times;</button><div id="mbody"></div></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="timer" role="timer" aria-label="Verbleibende Zeit"></div>
-<div id="timeup" role="status">Die Zeit ist abgelaufen. Ihr dürft zu Ende spielen.</div>
+<div id="timeup" role="status"><span>Die Zeit ist abgelaufen. Ihr dürft zu Ende spielen.</span><button type="button" id="tu-x" aria-label="Hinweis schließen">&times;</button></div>
 <div id="flash" aria-hidden="true"></div>
 
 <script>
@@ -425,7 +427,7 @@ function alarm(level){
   if(level===600){beeps(2,740,.28);toast('Noch 10 Minuten')}
   else if(level===300){beeps(3,820,.26);toast('Noch 5 Minuten')}
   else if(level===60){beeps(5,960,.22);toast('Noch 1 Minute')}
-  else if(level===0){beeps(1,440,1.4);$('timeup').classList.add('on')}
+  else if(level===0){beeps(1,440,1.4);if(!S.tuHide)$('timeup').classList.add('on')}
 }
 function tickTimer(){
   var el=$('timer');if(!el)return;
@@ -437,7 +439,7 @@ function tickTimer(){
   el.classList.toggle('warn',rem<=600&&rem>300);
   el.classList.toggle('crit',rem<=300);
   el.classList.toggle('blink',rem<=60&&rem>0&&!S.tEnd);
-  $('timeup').classList.toggle('on',rem<=0&&show&&!!S.warned[0]);
+  $('timeup').classList.toggle('on',rem<=0&&show&&!!S.warned[0]&&!S.tuHide);
   if(S.tEnd)return;
   var lvl=null;
   [0,60,300,600].forEach(function(l){if(rem<=l&&!S.warned[l]&&lvl===null)lvl=l});
@@ -446,6 +448,7 @@ function tickTimer(){
     if(show)alarm(lvl);else{ /* auf Titel-/Endseite: still markieren, Ton folgt nicht */ }
   }
 }
+$('tu-x').addEventListener('click',function(){S.tuHide=true;save();$('timeup').classList.remove('on')});
 setInterval(tickTimer,500);
 var toastT;
 function toast(t){var el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('on')},2800)}
